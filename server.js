@@ -2476,4 +2476,37 @@ app.get('/api/admin/stats', verificarToken, (req, res) => {
         FROM comprobantes
         WHERE DATE(fecha_emision) = CURDATE()
     `;
+ pool.query(query, (err, results) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(results[0] || { ventas_hoy: 0, comprobantes_hoy: 0, total_efectivo: 0, total_yape: 0, total_tarjeta: 0 });
+    });
+});
+
+// GET /api/me — Validar sesión activa
+app.get('/api/me', verificarToken, (req, res) => {
+    res.json({ usuario: req.usuario });
+});
+
+// ── Iniciar Servidor ───────────────────────────────────────────
+
+app.use(express.static(path.join(__dirname, 'dist')));
+
+app.use((req, res, next) => {
+    if (req.path.startsWith('/api/')) {
+        return next();
+    }
+
+    res.sendFile(
+        path.join(__dirname, 'dist', 'index.html'),
+        (err) => {
+            if (err) next(err);
+        }
+    );
+});
+
+const PORT = process.env.PORT || 3000;
+
+server.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Don Bigote ejecutándose con WebSockets (Socket.io) en el puerto ${PORT}`);
+});
 
